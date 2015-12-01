@@ -137,6 +137,7 @@
             return "url(#avatar_" + d.id + ")"
           }return color(d.type);
         })
+        .on('click', function(d, ev) {   if (d3.event.defaultPrevented || !d.html_url) {return;} window.open(d.html_url, '_blank').focus();})
         .call(force.drag);
 
     node.append("title")
