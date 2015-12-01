@@ -4,12 +4,28 @@
     return "https://api.github.com/repos/" + heinz.org + "/" + projectName + "/issues?per_page=100";
   }
 
-  function loadIssues(projectName) {
+  var remainingPages = {};
+
+  function loadIssues(apiURI, page) {
+
+    var requestUrl = apiURI + (page ? "&page=" + page : "")
+
     return $.ajax({
-             url: apiURI(projectName),
+             url: requestUrl ,
              type: "GET",
              cache: false,
-             beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'token ' + heinz.authToken);}
+             beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'token ' + heinz.authToken);},
+             success: function(res, status, xhr) {
+               var pagination = xhr.getResponseHeader("link");
+               if (pagination && pagination.indexOf('rel="next"') > 0) {
+                  if(!remainingPages[apiURI]) {
+                    remainingPages[apiURI] = 1;
+                  }
+                  remainingPages[apiURI] = remainingPages[apiURI]+1
+               } else if (remainingPages[apiURI]) {
+                 delete remainingPages[apiURI];
+               }
+             }
           });
   }
 
@@ -241,14 +257,27 @@
     })
   }
 
-  (function() {
-    //load issues for all repos configured in the config file
-    var issuePromises = _.map(heinz.repos, loadIssues);
+  var it = 0;
+
+  function waitForPromises(issuePromises, paginatedIssues) {
+    it = it+1;
     Promise.all(issuePromises).then(function() {
-        var issues = _.flatten(arguments);
-        processIssues(issues);
+        var issues = _.union(paginatedIssues, _.flatten(arguments));
+        if(_.keys(remainingPages).length === 0 || it > 30) {
+          processIssues(issues);
+        } else {
+          console.log(remainingPages);
+          var extendedPromises = _.map(_.pairs(remainingPages), function(pair) { return loadIssues(pair[0], pair[1]); });
+          waitForPromises(extendedPromises, issues);
+        }
       }, function(err) {
       console.error(err);
     });
+  }
+
+  (function() {
+    //load issues for all repos configured in the config file
+    var issuePromises = _.map(heinz.repos, function(repo) { return loadIssues(apiURI(repo));});
+    waitForPromises(issuePromises, []);
   }())
 }())
