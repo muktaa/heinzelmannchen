@@ -1,11 +1,35 @@
 (function() {
 
-  var color = d3.scale.category20();
+  var heinzConfig = {
+    color : d3.scale.category20()
+  };
 
-  function apiURI(projectName) {
-    return "https://api.github.com/repos/" + heinz.org + "/" + projectName + "/issues?per_page=100";
+  function  getQueryStrings() {
+    var queryStrings = {};
+    location.search.substr(1).split("&").forEach(function(item) {
+      var k = item.split("=")[0], v = decodeURIComponent(item.split("=")[1]);
+      if (k in queryStrings) {queryStrings[k].push(v); } else { queryStrings[k] = [v]; }
+    });
+    return queryStrings;
   }
 
+  function setConfig() {
+    var queryStrings = getQueryStrings();
+    if(!(queryStrings.repo && queryStrings.org && queryStrings.auth)) {
+      alert("Please fill in all required parameters in the URL.");
+      window.open ("/?org=ORG_NAME&repo=REPO1&repo=OPT_REPO_N&auth=AUTH_TOKEN","_self",false);
+    } else {
+      heinzConfig.repos = queryStrings.repo;
+      heinzConfig.org = queryStrings.org[0];
+      heinzConfig.authToken = queryStrings.auth[0];
+    }
+  }
+
+  function apiURI(projectName) {
+    return "https://api.github.com/repos/" + heinzConfig.org + "/" + projectName + "/issues?per_page=100";
+  }
+
+  //controls remaining pagination loads
   var remainingPages = {};
 
   function loadIssues(apiURI, page) {
@@ -16,7 +40,7 @@
              url: requestUrl ,
              type: "GET",
              cache: false,
-             beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'token ' + heinz.authToken);},
+             beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'token ' + heinzConfig.authToken);},
              success: function(res, status, xhr) {
                var pagination = xhr.getResponseHeader("link");
                if (pagination && pagination.indexOf('rel="next"') > 0) {
@@ -67,7 +91,7 @@
 
     var users = makeNodes("users");
     var issues = makeNodes("issues");
-    var milestones = makeNodes("milestones")
+    var milestones = makeNodes("milestones");
     var nodes = _.union(users, issues, milestones);
     var links = [];
 
@@ -167,13 +191,24 @@
         .style("fill", function(d) {
           if(d.type === 'users') {
             return "url(#avatar_" + d.id + ")";
-          }return color(d.type);
+          }
+          return heinzConfig.color(d.type);
         })
         .on('click', function(d, ev) {   if (d3.event.defaultPrevented || !d.html_url) {return;} window.open(d.html_url, '_blank').focus();})
         .call(drag);
 
     node.append("title")
-        .text(function(d) { return (d.title ||  d.login);});
+        .text(function(d) {
+          if(d.type === 'users') {
+            return d.login;
+          } else if(d.type === 'issues') {
+            return "#" + d.number + " - " + d.title;
+          } else if(d.type === 'milestones') {
+            return "M - " + d.title;
+          } else if(d.type === 'issues') {
+            return d.title;
+          }
+        });
 
     force.on("tick", function() {
       link.attr("x1", function(d) { return d.source.x; })
@@ -260,16 +295,12 @@
     });
   }
 
-  var it = 0;
-
   function waitForPromises(issuePromises, paginatedIssues) {
-    it = it+1;
     Promise.all(issuePromises).then(function() {
         var issues = _.union(paginatedIssues, _.flatten(arguments));
-        if(_.keys(remainingPages).length === 0 || it > 30) {
+        if(_.keys(remainingPages).length === 0) {
           processIssues(issues);
         } else {
-          console.log(remainingPages);
           var extendedPromises = _.map(_.pairs(remainingPages), function(pair) { return loadIssues(pair[0], pair[1]); });
           waitForPromises(extendedPromises, issues);
         }
@@ -280,6 +311,8 @@
 
   (function() {
 
+    setConfig();
+
     $("#search").keyup(function(e){
       if(e.keyCode == 13){
         var searchKey = $("#search").val();
@@ -288,17 +321,16 @@
     });
 
     $("#reset-search").click(function(){
-      console.log("xxx");
       d3.selectAll("circle").style("fill", function(d) {
         if(d.type === 'users') {
           return "url(#avatar_" + d.id + ")";
         }
-        return color(d.type);
+        return heinzConfig.color(d.type);
       });
     });
 
     //load issues for all repos configured in the config file
-    var issuePromises = _.map(heinz.repos, function(repo) { return loadIssues(apiURI(repo));});
+    var issuePromises = _.map(heinzConfig.repos, function(repo) { return loadIssues(apiURI(repo));});
     waitForPromises(issuePromises, []);
   }());
 }());
