@@ -1,5 +1,5 @@
 window.heinz = {
-  authToken: "TOKEN", // A github auth token with access to the repos below.
+  authToken: "a3fd1038b3cea4e858cf37ba81405f66d12508ec", // A github auth token with access to the repos below.
   org: "cotiviti",
-  repos: ["model-office"] // all the repositiories you want to include
-}
+  repos: ["aagaami"] // all the repositiories you want to include
+};

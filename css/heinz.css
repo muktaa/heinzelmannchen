@@ -16,3 +16,10 @@
 .brand-logo img {
   height: 64px;
 }
+
+.search-input {
+  position: fixed;
+  top: 84px;
+  right: 20px;
+  width: 200px;
+}

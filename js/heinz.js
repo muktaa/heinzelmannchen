@@ -1,5 +1,7 @@
 (function() {
 
+  var color = d3.scale.category20();
+
   function apiURI(projectName) {
     return "https://api.github.com/repos/" + heinz.org + "/" + projectName + "/issues?per_page=100";
   }
@@ -8,7 +10,7 @@
 
   function loadIssues(apiURI, page) {
 
-    var requestUrl = apiURI + (page ? "&page=" + page : "")
+    var requestUrl = apiURI + (page ? "&page=" + page : "");
 
     return $.ajax({
              url: requestUrl ,
@@ -21,7 +23,7 @@
                   if(!remainingPages[apiURI]) {
                     remainingPages[apiURI] = 1;
                   }
-                  remainingPages[apiURI] = remainingPages[apiURI]+1
+                  remainingPages[apiURI] = remainingPages[apiURI] + 1;
                } else if (remainingPages[apiURI]) {
                  delete remainingPages[apiURI];
                }
@@ -44,8 +46,6 @@
     //TODO autmatic resizing
     var width = $(window).width();
     var height = $(window).height() - $(".nav-wrapper").height();
-
-    var color = d3.scale.category20();
 
     var force = d3.layout.force()
         .charge(-300)
@@ -76,23 +76,23 @@
       links.push({
         source: dependencies.milestones[dep.milestone],
         target: dependencies.issues[dep.issue]
-      })
-    })
+      });
+    });
 
     // assemble issue -> user dependencies
     _.each(dependencies.userDependencies, function(dep) {
       links.push({
         source: dependencies.issues[dep.issue],
         target: dependencies.users[dep.user]
-      })
-    })
+      });
+    });
 
     _.each(dependencies.indicationDependencies, function(dep) {
       links.push({
         source: dependencies.issues[dep.source],
         target: dependencies.issues[dep.target]
-      })
-    })
+      });
+    });
 
     var graph = {
       nodes: nodes,
@@ -121,9 +121,9 @@
     svg.append("svg:defs").selectAll("marker")
       .data([["endBig", 45], ["endDefault", 28]])
       .enter().append("svg:marker")
-        .attr("id", function(d) { return d[0]})
+        .attr("id", function(d) { return d[0];})
         .attr("viewBox", "0 -5 10 10")
-        .attr("refX", function(d) { return d[1]})
+        .attr("refX", function(d) { return d[1];})
         .attr("refY", 0)
         .attr("markerWidth", 6)
         .attr("markerHeight", 6)
@@ -162,9 +162,11 @@
             return 10;
           }
         })
+        .attr("number", function(d) { return d.number; })
+        .attr("type", function(d) { return d.type; })
         .style("fill", function(d) {
           if(d.type === 'users') {
-            return "url(#avatar_" + d.id + ")"
+            return "url(#avatar_" + d.id + ")";
           }return color(d.type);
         })
         .on('click', function(d, ev) {   if (d3.event.defaultPrevented || !d.html_url) {return;} window.open(d.html_url, '_blank').focus();})
@@ -228,7 +230,7 @@
         userDependencies.push({user: issue.assignee.id, issue: issue.id});
       }
 
-      var dependentIssuesMeta = findIssueDependencies(issue.body)
+      var dependentIssuesMeta = findIssueDependencies(issue.body);
       var depententIssues = dependentIssuesMeta.map(function(dependentIssueMeta) {
         var urlPrefix = issue.html_url.substring(0, issue.html_url.lastIndexOf("/")+1);
         return _.find(issues, function(otherIssue) {
@@ -240,12 +242,12 @@
           indicationDependencies.push({
             source: issue.id,
             target: dependentIssue.id
-          })
+          });
         } else {
           console.warn("Referenced issue was not found:");
           console.warn(dependentIssue);
         }
-      })
+      });
     });
 
     drawGraph({
@@ -255,7 +257,7 @@
       milestoneDependencies: milestoneDependencies,
       userDependencies: userDependencies,
       indicationDependencies: indicationDependencies
-    })
+    });
   }
 
   var it = 0;
@@ -277,8 +279,26 @@
   }
 
   (function() {
+
+    $("#search").keyup(function(e){
+      if(e.keyCode == 13){
+        var searchKey = $("#search").val();
+        d3.selectAll("circle[number='" + searchKey + "']").style("fill", "red");
+      }
+    });
+
+    $("#reset-search").click(function(){
+      console.log("xxx");
+      d3.selectAll("circle").style("fill", function(d) {
+        if(d.type === 'users') {
+          return "url(#avatar_" + d.id + ")";
+        }
+        return color(d.type);
+      });
+    });
+
     //load issues for all repos configured in the config file
     var issuePromises = _.map(heinz.repos, function(repo) { return loadIssues(apiURI(repo));});
     waitForPromises(issuePromises, []);
-  }())
-}())
+  }());
+}());
