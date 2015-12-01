@@ -41,8 +41,9 @@
       graphContainer.attr('transform', 'translate(' + trans + ') scale(' + scale + ')');
     }
 
-    var width = 1280,
-        height = 800;
+    //TODO autmatic resizing
+    var width = $(window).width();
+    var height = $(window).height() - $(".nav-wrapper").height();
 
     var color = d3.scale.category20();
 
