@@ -14,6 +14,12 @@
       return _.map(_.values(dependencies[type]), function(e) {e.type = type; return e;});
     }
 
+    function rescale() {
+      var trans = d3.event.translate;
+      var scale = d3.event.scale;
+      graphContainer.attr('transform', 'translate(' + trans + ') scale(' + scale + ')');
+    }
+
     var width = 1280,
         height = 800;
 
@@ -26,7 +32,8 @@
 
     var svg = d3.select("body").append("svg")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .call(d3.behavior.zoom().on('zoom', rescale)).on('dblclick.zoom', null);
 
     var users = makeNodes("users");
     var issues = makeNodes("issues");
@@ -94,12 +101,14 @@
         .append("svg:path")
           .attr("d", "M0,-5L10,0L0,5");
 
+    var graphContainer = svg.append('g');
+
     force
         .nodes(graph.nodes)
         .links(graph.links)
         .start();
 
-    var link = svg.selectAll(".link")
+    var link = graphContainer.selectAll(".link")
         .data(graph.links)
       .enter().append("line")
         .attr("class", "link")
@@ -112,7 +121,7 @@
         })
         .style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
-    var node = svg.selectAll(".node")
+    var node = graphContainer.selectAll(".node")
         .data(graph.nodes)
       .enter().append("circle")
         .attr("class", "node")
