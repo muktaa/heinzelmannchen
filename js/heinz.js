@@ -30,6 +30,14 @@
         .linkDistance(80)
         .size([width, height]);
 
+    var drag = force.drag()
+        .origin(function(d) { return d; })
+        .on('dragstart', dragstarted);
+
+    function dragstarted() { // jshint ignore:line
+      d3.event.sourceEvent.stopPropagation();
+    }
+
     var svg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height)
@@ -138,7 +146,7 @@
           }return color(d.type);
         })
         .on('click', function(d, ev) {   if (d3.event.defaultPrevented || !d.html_url) {return;} window.open(d.html_url, '_blank').focus();})
-        .call(force.drag);
+        .call(drag);
 
     node.append("title")
         .text(function(d) { return (d.title ||  d.login);});
