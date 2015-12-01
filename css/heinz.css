@@ -7,3 +7,12 @@
   stroke: #999;
   stroke-opacity: .6;
 }
+
+.nav-wrapper {
+  padding: 0px 20px;
+  background-color: #e5e8e8
+}
+
+.brand-logo img {
+  height: 64px;
+}

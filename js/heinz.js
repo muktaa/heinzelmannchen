@@ -1,9 +1,14 @@
 (function() {
 
+  function apiURI(projectName) {
+    return "https://api.github.com/repos/" + heinz.org + "/" + projectName + "/issues?per_page=100";
+  }
+
   function loadIssues(projectName) {
     return $.ajax({
-             url: "https://api.github.com/repos/" + heinz.org + "/" + projectName + "/issues",
+             url: apiURI(projectName),
              type: "GET",
+             cache: false,
              beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'token ' + heinz.authToken);}
           });
   }
@@ -38,7 +43,7 @@
       d3.event.sourceEvent.stopPropagation();
     }
 
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("div#dependency-graph").append("svg")
         .attr("width", width)
         .attr("height", height)
         .call(d3.behavior.zoom().on('zoom', rescale)).on('dblclick.zoom', null);
@@ -183,63 +188,66 @@
     }
   }
 
+  function processIssues(issues) {
+    var milestones = {};
+    var users = [];
+    var milestoneDependencies = [];
+    var userDependencies = [];
+    var indicationDependencies = [];
+
+    //extract dependencies from the graph
+    _.each(issues, function(issue) {
+      if(issue.milestone) {
+        if(!milestones[issue.milestone.id]) {
+          milestones[issue.milestone.id] = issue.milestone;
+        }
+        milestoneDependencies.push({milestone: issue.milestone.id, issue: issue.id});
+      }
+
+      if(issue.assignee) {
+        if(!users[issue.assignee.id]) {
+          users[issue.assignee.id] = issue.assignee;
+        }
+        userDependencies.push({user: issue.assignee.id, issue: issue.id});
+      }
+
+      var dependentIssuesMeta = findIssueDependencies(issue.body)
+      var depententIssues = dependentIssuesMeta.map(function(dependentIssueMeta) {
+        var urlPrefix = issue.html_url.substring(0, issue.html_url.lastIndexOf("/")+1);
+        return _.find(issues, function(otherIssue) {
+            return otherIssue.html_url === urlPrefix + dependentIssueMeta.number;
+        }) || dependentIssueMeta;
+      });
+      _.each(depententIssues, function(dependentIssue) {
+        if(dependentIssue.id) {
+          indicationDependencies.push({
+            source: issue.id,
+            target: dependentIssue.id
+          })
+        } else {
+          console.warn("Referenced issue was not found:");
+          console.warn(dependentIssue);
+        }
+      })
+    });
+
+    drawGraph({
+      issues: _.indexBy(issues, 'id'),
+      users : users,
+      milestones: milestones,
+      milestoneDependencies: milestoneDependencies,
+      userDependencies: userDependencies,
+      indicationDependencies: indicationDependencies
+    })
+  }
+
   (function() {
     //load issues for all repos configured in the config file
     var issuePromises = _.map(heinz.repos, loadIssues);
     Promise.all(issuePromises).then(function() {
-      var issues = _.flatten(arguments);
-      var milestones = {};
-      var users = [];
-      var milestoneDependencies = [];
-      var userDependencies = [];
-      var indicationDependencies = [];
-
-      //extract dependencies from the graph
-      _.each(issues, function(issue) {
-        if(issue.milestone) {
-          if(!milestones[issue.milestone.id]) {
-            milestones[issue.milestone.id] = issue.milestone;
-          }
-          milestoneDependencies.push({milestone: issue.milestone.id, issue: issue.id});
-        }
-
-        if(issue.assignee) {
-          if(!users[issue.assignee.id]) {
-            users[issue.assignee.id] = issue.assignee;
-          }
-          userDependencies.push({user: issue.assignee.id, issue: issue.id});
-        }
-
-        var dependentIssuesMeta = findIssueDependencies(issue.body)
-        var depententIssues = dependentIssuesMeta.map(function(dependentIssueMeta) {
-          var urlPrefix = issue.html_url.substring(0, issue.html_url.lastIndexOf("/")+1);
-          return _.find(issues, function(otherIssue) {
-              return otherIssue.html_url === urlPrefix + dependentIssueMeta.number;
-          }) || dependentIssueMeta;
-        });
-        _.each(depententIssues, function(dependentIssue) {
-          if(dependentIssue.id) {
-            indicationDependencies.push({
-              source: issue.id,
-              target: dependentIssue.id
-            })
-          } else {
-            console.warn("Referenced issue was not found:");
-            console.warn(dependentIssue);
-          }
-        })
-      });
-
-
-      drawGraph({
-        issues: _.indexBy(issues, 'id'),
-        users : users,
-        milestones: milestones,
-        milestoneDependencies: milestoneDependencies,
-        userDependencies: userDependencies,
-        indicationDependencies: indicationDependencies
-      })
-    }, function(err) {
+        var issues = _.flatten(arguments);
+        processIssues(issues);
+      }, function(err) {
       console.error(err);
     });
   }())
