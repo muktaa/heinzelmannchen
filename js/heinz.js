@@ -231,11 +231,11 @@
 
   function findIssueDependencies(issueBody) {
     function getDependencies(dependenciesSection) {
-      var re = /\* \[ \] \#(\d+) \- (.*)/g;
+      var re = /\* \[ \] \#(\d+).*/g;
       var issueDependencies = [];
       var match;
       while (match = re.exec(dependenciesSection)) {
-        issueDependencies.push({number: match[1], title: match[2]});
+        issueDependencies.push({number: match[1]});
       }
       return issueDependencies;
     }
@@ -325,7 +325,7 @@
       if(e.keyCode == 13){
         //reset previous pulse
         d3.selectAll("circle.pulse").classed('pulse', false);
-        
+
         var searchKey = $("#search").val();
         var matches = d3.selectAll("circle[number='" + searchKey + "']");
         if(matches.length>0) {
