@@ -1,7 +1,8 @@
 (function() {
 
   var heinzConfig = {
-    color : d3.scale.category20()
+    color : d3.scale.category20(),
+    zoom : d3.behavior.zoom()
   };
 
   function  getQueryStrings() {
@@ -55,6 +56,13 @@
           });
   }
 
+  function resetZoom() {
+    d3.select("#graph-container").transition().duration(600).attr("transform", "translate(0,0) scale(1)");
+    var zoom = heinzConfig.zoom;
+    zoom.scale(1);
+    zoom.translate([0, 0]);
+  }
+
   function drawGraph(dependencies) {
 
     function makeNodes(type) {
@@ -87,7 +95,7 @@
     var svg = d3.select("div#dependency-graph").append("svg")
         .attr("width", width)
         .attr("height", height)
-        .call(d3.behavior.zoom().on('zoom', rescale)).on('dblclick.zoom', null);
+        .call(heinzConfig.zoom.on('zoom', rescale)).on('dblclick.zoom', null);
 
     var users = makeNodes("users");
     var issues = makeNodes("issues");
@@ -155,7 +163,7 @@
         .append("svg:path")
           .attr("d", "M0,-5L10,0L0,5");
 
-    var graphContainer = svg.append('g');
+    var graphContainer = svg.append('g').attr("id", "graph-container");
 
     force
         .nodes(graph.nodes)
@@ -315,18 +323,23 @@
 
     $("#search").keyup(function(e){
       if(e.keyCode == 13){
+        //reset previous pulse
+        d3.selectAll("circle.pulse").classed('pulse', false);
+        
         var searchKey = $("#search").val();
-        d3.selectAll("circle[number='" + searchKey + "']").style("fill", "red");
+        var matches = d3.selectAll("circle[number='" + searchKey + "']");
+        if(matches.length>0) {
+          matches.classed('searched', true).classed('pulse', true);
+          resetZoom();
+        } else {
+          console.debug("No node found for search: " + searchKey);
+        }
       }
     });
 
     $("#reset-search").click(function(){
-      d3.selectAll("circle").style("fill", function(d) {
-        if(d.type === 'users') {
-          return "url(#avatar_" + d.id + ")";
-        }
-        return heinzConfig.color(d.type);
-      });
+      d3.selectAll("circle").classed('pulse', false).classed('searched', false);
+      resetZoom();
     });
 
     //load issues for all repos configured in the config file
