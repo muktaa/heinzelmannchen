@@ -15,15 +15,19 @@
   }
 
   function setConfig() {
-    var queryStrings = getQueryStrings();
-    if(!(queryStrings.repo && queryStrings.org && queryStrings.auth)) {
-      alert("Please fill in all required parameters in the URL.");
-      window.open ("/?org=ORG_NAME&repo=REPO1&repo=OPT_REPO_N&auth=AUTH_TOKEN","_self",false);
-    } else {
-      heinzConfig.repos = queryStrings.repo;
-      heinzConfig.org = queryStrings.org[0];
-      heinzConfig.authToken = queryStrings.auth[0];
+    if(!heinzConfig.authToken){
+      $('#formInput').openModal();
     }
+    else{
+      loadPage()
+    }
+  }
+
+  function setConfigFromForm(){
+    heinzConfig.repos = $('#repoName').val().split(",");
+    heinzConfig.org = $('#orgName').val();
+    heinzConfig.authToken = $('#authToken').val();
+    loadPage();
   }
 
   function apiURI(projectName) {
@@ -329,7 +333,7 @@
   (function() {
 
     setConfig();
-
+    $('#submitForm').click(setConfigFromForm)
     $("#search").keyup(function(e){
       if(e.keyCode == 13){
         //reset previous pulse
@@ -350,9 +354,10 @@
       d3.selectAll("circle").classed('pulse', false).classed('searched', false);
       resetZoom();
     });
-
-    //load issues for all repos configured in the config file
+  }());
+  //load issues for all repos configured in the config file
+  function loadPage(){
     var issuePromises = _.map(heinzConfig.repos, function(repo) { return loadIssues(apiURI(repo));});
     waitForPromises(issuePromises, []);
-  }());
+  }
 }());

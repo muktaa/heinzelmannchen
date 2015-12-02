@@ -34,6 +34,38 @@
     </div>
   </div>
 
+  <!-- Modal Form for taking input -->
+      <div id="formInput" class="modal">
+        <div class="modal-content">
+          <h4>Please provide the following information</h4>
+          <div class="row">
+      <form id="details" class="col s12">
+        <div class="row">
+          <div class="input-field col s9">
+            <input placeholder="Ex: cotiviti" id="orgName" type="text" class="validate">
+            <label for="org_name">Organization Name</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s9">
+            <input placeholder="Ex: abc,def" id="repoName" type="text" class="validate">
+            <label for="org_name">Repo Names (Comma Separated)</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s9">
+            <input id="authToken" type="password" class="validate">
+            <label for="authToken">Authentication Token</label>
+          </div>
+        </div>
+      </form>
+    </div>
+        </div>
+        <div class="modal-footer">
+          <a href="#!" id="submitForm" class=" modal-action modal-close waves-effect waves-green btn-flat">Submit</a>
+        </div>
+      </div>
+      
   <script src="http://underscorejs.org/underscore-min.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
