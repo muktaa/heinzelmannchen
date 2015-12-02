@@ -199,6 +199,15 @@
         .style("fill", function(d) {
           if(d.type === 'users') {
             return "url(#avatar_" + d.id + ")";
+          } else if (d.type === "issues" && d.labels && d.labels.length > 0) {
+            var priorityLabels = _.pluck(d.labels, "name");
+            if(_.contains(priorityLabels, 'priority high')) {
+              return '#b71c1c';
+            } else if(_.contains(priorityLabels, 'priority medium')) {
+              return '#f57c00';
+            } else if(_.contains(priorityLabels, 'priority low')) {
+              return '#ffa726';
+            }
           }
           return heinzConfig.color(d.type);
         })
