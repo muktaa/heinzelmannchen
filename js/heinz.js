@@ -187,6 +187,16 @@
         .data(graph.nodes)
       .enter().append("circle")
         .attr("class", "node")
+        .classed("newly-created", function(d) {
+          if(d["created_at"]) {
+            var created = new Date(d["created_at"]);
+            if (((new Date().getTime()) - created.getTime()) < 24*60*60*1000) {
+              console.log(d);
+              return true;
+            }
+          }
+          return false;
+        })
         .attr("r", function(d) {
           if(d.type ==="users") {
             return 20;
@@ -296,8 +306,7 @@
             target: dependentIssue.id
           });
         } else {
-          console.warn("Referenced issue was not found:");
-          console.warn(dependentIssue);
+          console.warn("Referenced issue #" + dependentIssue.number + " was not found as referenced in #" + issue.number);
         }
       });
     });
