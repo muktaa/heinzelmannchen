@@ -6,7 +6,7 @@ So the question, then, is how do you define risks? For us it comes down to depen
 
 An alternative approach is to ask "how long do you think it will take you to complete X" where X is some piece of work. The longer the estimate the more risk.  The problem is that humans are epically horrible at estimating how long a piece of creative work will take. What is actually happening when a human is presented with a request for an estimate is they perform an on-the-fly dependency analysis and attempt to aggregate the cost estimate for each item in their ad-hoc dependencies graph.  They will tend to be more correct when they have done X many times before, know what all the dependencies are, and know how long it took to clear each depedency; in other words, very low risk.
 
-![heinzelmannchen](https://cloud.githubusercontent.com/assets/1324391/11509558/056036b2-985f-11e5-8059-e8dab12d3117.png)
+![heinzelmannchen](https://github.com/cotiviti/heinzelmannchen/blob/master/screenShot.png)
 
 We've decided to just jump to the end and created this handy tool enabling us to visualize the dependencies between our issues. For each task we ask "is this dependent on something else?" If the answer is no then we are at leaf node in the graph. Of course we are wrong about that most of the time so when we discover a new dependency we immediately create an issue and add in the dependencies.  So now we have a workable definition of risk - riskier issues have more incoming dependencies.  This vears in to some interesting graph analysis that we haven't gotten in to yet.
 
