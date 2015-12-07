@@ -187,9 +187,9 @@
         .data(graph.nodes)
       .enter().append("circle")
         .attr("class", "node")
-        .classed("newly-created", function(d) {
+        .classed("recently-modified", function(d) {
           if(d["created_at"]) {
-            var created = new Date(d["created_at"]);
+            var created = new Date(d["updated_at"]);
             if (((new Date().getTime()) - created.getTime()) < 24*60*60*1000) {
               console.log(d);
               return true;

@@ -3,7 +3,7 @@
   stroke-width: 1.5px;
 }
 
-.node.newly-created {
+.node.recently-modified {
   stroke: #64dd17;
   stroke-width: 4px;
 }
