@@ -10,6 +10,21 @@ An alternative approach is to ask "how long do you think it will take you to com
 
 We've decided to just jump to the end and created this handy tool enabling us to visualize the dependencies between our issues. For each task we ask "is this dependent on something else?" If the answer is no then we are at leaf node in the graph. Of course we are wrong about that most of the time so when we discover a new dependency we immediately create an issue and add in the dependencies.  So now we have a workable definition of risk - riskier issues have more incoming dependencies.  This vears in to some interesting graph analysis that we haven't gotten in to yet.
 
+Some notes on the colors.  We use priority tags to help us triangulate ourselves with our customer's business needs. Heinzelmannchen uses those to color code each circle - red is high, yellow is medium, dark blue is low.  The light blue circles are milestones. The green outline on some of the issues highlights those issues that have been changed in the last 24 hours.
+
+To add dependencies simply add this section to the tail end of each issue -
+```
+### Dependencies
+* [ ] #X
+* [ ] #Y
+* [ ] #Z
+```
+Where X, Y, and Z are issue ID's.  We created this handy link to speed up the process -
+```
+https://github.com/YOUR-ORG/YOUR-REPO/issues/new?&body=%23%23%23%20Description%0A%0A%23%23%23%20Acceptance%20Test%0A%0A%23%23%23%20Dependencies%0A%0A%2A%20%5B%20%5D%20%23%0A%2A%20%5B%20%5D%20%23%0A%2A%20%5B%20%5D%20%23%0A%2A%20%5B%20%5D%20%23%0A%2A%20%5B%20%5D%20%23
+```
+Where YOUR-ORG is your organization and YOUR-REPO is your repo.
+
 1. To get this operational first create a [Github auth token](https://help.github.com/articles/creating-an-access-token-for-command-line-use).
 2. With the auth token at hand clone this repo and host it on a web server of your choice. 
  * On OSX you can use this little util within the root folder of this project: `ruby -rwebrick -e'WEBrick::HTTPServer.new(:Port => 8000, :DocumentRoot => Dir.pwd).start'`
