@@ -22,18 +22,35 @@
       <a href="https://github.com/cotiviti" class="brand-logo"><img src="https://avatars1.githubusercontent.com/u/9590364?v=3"/></a>
     </div>
   </nav>
-
-  <div id="dependency-graph"></div>
-  <div class="search-input z-depth-2">
-    <div class="input-field">
-      <i class="material-icons prefix">search_circle</i>
-      <input type="text" class="validate" id="search">
-      <label for="search">Search for an Issue</label>
-    </div>
-    <div>
-      <button class="waves-effect waves-light btn" id="reset-search">Reset</button>
+  <div class="container" id="auth-input">
+    <div class="z-depth-2">
+      <div>
+        To let Heinzelmannchen access Github issues on your behalf, you need to generate a personal access token and put it in the input field below.
+      </div>
+      <div class="input-field">
+        <i class="material-icons prefix">auth token</i>
+        <input type="text" class="validate" id="authtoken">
+        <label for="authtoken">Github Personal Access Token</label>
+      </div>
+      <div>
+        <button class="waves-effect waves-light btn" id="set-access-token">Done</button>
+      </div>
     </div>
   </div>
+  <div id="issue-visualization">
+    <div id="dependency-graph"></div>
+    <div class="search-input z-depth-2">
+      <div class="input-field">
+        <i class="material-icons prefix">search_circle</i>
+        <input type="text" class="validate" id="search">
+        <label for="search">Search for an Issue</label>
+      </div>
+      <div>
+        <button class="waves-effect waves-light btn" id="reset-search">Reset</button>
+      </div>
+    </div>
+  </div>
+
 
   <script src="http://underscorejs.org/underscore-min.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>

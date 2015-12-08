@@ -14,15 +14,31 @@
     return queryStrings;
   }
 
+  function checkAuth() {
+    if(typeof(Storage) !== "undefined") {
+      if(localStorage.heinzAuth) {
+        $("#auth-input").hide();
+        heinzConfig.authToken = localStorage.heinzAuth;
+        return true;
+      } else {
+        $("#auth-input").show();
+        $("#issue-visualization").hide();
+        return false;
+      }
+    } else {
+      alert("Sorry, your broser does not support the required HTML5 features.");
+      throw new Error("Unsupported broser!");
+    }
+  }
+
   function setConfig() {
     var queryStrings = getQueryStrings();
-    if(!(queryStrings.repo && queryStrings.org && queryStrings.auth)) {
+    if(!(queryStrings.repo && queryStrings.org)) {
       alert("Please fill in all required parameters in the URL.");
-      window.open ("/?org=ORG_NAME&repo=REPO1&repo=OPT_REPO_N&auth=AUTH_TOKEN","_self",false);
+      window.open("/?org=cotiviti&repo=heinzelmannchen&repo=cotiviti-parent","_self",false);
     } else {
       heinzConfig.repos = queryStrings.repo;
       heinzConfig.org = queryStrings.org[0];
-      heinzConfig.authToken = queryStrings.auth[0];
     }
   }
 
@@ -33,7 +49,7 @@
   //controls remaining pagination loads
   var remainingPages = {};
 
-  function loadIssues(apiURI, page) {
+  function loadIssuesPage(apiURI, page) {
 
     var requestUrl = apiURI + (page ? "&page=" + page : "");
 
@@ -191,14 +207,13 @@
           if(d["created_at"]) {
             var created = new Date(d["updated_at"]);
             if (((new Date().getTime()) - created.getTime()) < 24*60*60*1000) {
-              console.log(d);
               return true;
             }
           }
           return false;
         })
         .attr("r", function(d) {
-          if(d.type ==="users") {
+          if(d.type === "users") {
             return 20;
           } else {
             return 10;
@@ -327,7 +342,7 @@
         if(_.keys(remainingPages).length === 0) {
           processIssues(issues);
         } else {
-          var extendedPromises = _.map(_.pairs(remainingPages), function(pair) { return loadIssues(pair[0], pair[1]); });
+          var extendedPromises = _.map(_.pairs(remainingPages), function(pair) { return loadIssuesPage(pair[0], pair[1]); });
           waitForPromises(extendedPromises, issues);
         }
       }, function(err) {
@@ -335,7 +350,15 @@
     });
   }
 
+  function loadIssues() {
+    //load issues for all repos configured in the config file
+    var issuePromises = _.map(heinzConfig.repos, function(repo) { return loadIssuesPage(apiURI(repo));});
+    waitForPromises(issuePromises, []);
+  }
+
   (function() {
+
+    var authIsSet = checkAuth();
 
     setConfig();
 
@@ -360,8 +383,19 @@
       resetZoom();
     });
 
-    //load issues for all repos configured in the config file
-    var issuePromises = _.map(heinzConfig.repos, function(repo) { return loadIssues(apiURI(repo));});
-    waitForPromises(issuePromises, []);
+
+
+    if(authIsSet) {
+      loadIssues();
+    } else {
+      $("#set-access-token").click(function(){
+        var token = $("#authtoken").val();
+        $("#auth-input").hide();
+        heinzConfig.authToken = token;
+        localStorage.heinzAuth = token;
+        $("#issue-visualization").show();
+        loadIssues();
+      });
+    }
   }());
 }());

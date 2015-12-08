@@ -31,6 +31,15 @@
   background-color: #FFF;
 }
 
+div#auth-input {
+    margin-top: 20px;
+    display: none;
+}
+
+div#auth-input > div {
+  padding: 20px;
+}
+
 .node.searched {
   fill: #64dd17 !important;
 }
