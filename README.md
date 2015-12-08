@@ -11,7 +11,8 @@ An alternative approach is to ask "how long do you think it will take you to com
 We've decided to just jump to the end and created this handy tool enabling us to visualize the dependencies between our issues. For each task we ask "is this dependent on something else?" If the answer is no then we are at leaf node in the graph. Of course we are wrong about that most of the time so when we discover a new dependency we immediately create an issue and add in the dependencies.  So now we have a workable definition of risk - riskier issues have more incoming dependencies.  This vears in to some interesting graph analysis that we haven't gotten in to yet.
 
 1. To get this operational first create a [Github auth token](https://help.github.com/articles/creating-an-access-token-for-command-line-use).
-2. With the auth token at hand clone this repo and host it on a web server of your choice. (On OSX you can use this little util within the root folder of this project: `ruby -rwebrick -e'WEBrick::HTTPServer.new(:Port => 8000, :DocumentRoot => Dir.pwd).start'` )
+2. With the auth token at hand clone this repo and host it on a web server of your choice. 
+ * On OSX you can use this little util within the root folder of this project: `ruby -rwebrick -e'WEBrick::HTTPServer.new(:Port => 8000, :DocumentRoot => Dir.pwd).start'`
 3. Open the following URL in your web browser (Tested on Chrome & Safari): `http://HOST:PORT/?org=ORG_NAME&repo=REPO`
 where:
  * HOST and PORT depend on where you host the service (e.g. `localhost:8000` if you use the ruby command from above.).
